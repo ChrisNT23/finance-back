@@ -15,6 +15,30 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log('Request received:', {
+    method: req.method,
+    path: req.path,
+    body: req.body,
+    headers: req.headers
+  });
+  next();
+});
+
+// Response logging middleware
+app.use((req, res, next) => {
+  const oldJson = res.json;
+  res.json = function(data) {
+    console.log('Response being sent:', {
+      status: res.statusCode,
+      data: data
+    });
+    return oldJson.apply(res, arguments);
+  };
+  next();
+});
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -29,15 +53,18 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/statistics', require('./routes/statistics'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  console.error('Error occurred:', err);
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 // Start server
