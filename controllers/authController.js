@@ -5,10 +5,12 @@ const bcrypt = require('bcryptjs');
 // Login user
 exports.login = async (req, res) => {
   try {
+    console.log('Login request received:', req.body);
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({
         message: 'Por favor proporciona email y contraseña'
       });
@@ -45,6 +47,14 @@ exports.login = async (req, res) => {
     );
 
     console.log('Token generado exitosamente para:', user.email);
+    console.log('Enviando respuesta:', {
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name
+      }
+    });
 
     // Send response
     res.json({
