@@ -47,27 +47,24 @@ exports.login = async (req, res) => {
     );
 
     console.log('Token generado exitosamente para:', user.email);
-    console.log('Enviando respuesta:', {
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name
-      }
-    });
 
-    // Send response
-    res.json({
+    const responseData = {
       token,
       user: {
         id: user._id,
         email: user.email,
         name: user.name
       }
-    });
+    };
+
+    console.log('Enviando respuesta:', responseData);
+
+    // Send response with explicit content type
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(200).json(responseData);
   } catch (error) {
     console.error('Error en login:', error);
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Error en el servidor',
       error: error.message
     });
